@@ -16,7 +16,7 @@ xTrain <- read.table("data/uci-har-dataset/train/X_train.txt",
 xTrainSelected <- xTrain[, featureSelected]
 yTrain <- read.table("data/uci-har-dataset/train/y_train.txt", 
                      colClasses = "factor",
-                     col.names = "label")
+                     col.names = "activityLabel")
 subTrain <- read.table("data/uci-har-dataset/train/subject_train.txt",
                        colClasses = "factor",
                        col.names = "subject")
@@ -29,7 +29,7 @@ xTest <- read.table("data/uci-har-dataset/test/X_test.txt",
 xTestSelected <- xTest[, featureSelected]
 yTest <- read.table("data/uci-har-dataset/test/y_test.txt", 
                     colClasses = "factor",
-                    col.names = "label")
+                    col.names = "activityLabel")
 subTest <- read.table("data/uci-har-dataset/test/subject_test.txt",
                        colClasses = "factor",
                        col.names = "subject")
@@ -42,12 +42,12 @@ dataAll <- rbind(dataTrain, dataTest)
 # read activity labels
 activityLabels <- read.table("data/uci-har-dataset/activity_labels.txt",
                              colClasses = "character",
-                             col.names = c("code", "label"))
+                             col.names = c("code", "activityLabel"))
 # recode activity labels in data
 library(plyr)
-dataAll$label <- mapvalues(dataAll$label, 
+dataAll$activityLabel <- mapvalues(dataAll$activityLabel, 
                      from = activityLabels$code, 
-                     to = activityLabels$label)
+                     to = activityLabels$activityLabel)
 
 
 # create an independent tidy data set
@@ -55,7 +55,9 @@ library(tidyr)
 dataAvg <- 
         dataAll %>%
         gather(measure, value, 1:66) %>%
-        group_by(label, subject, measure) %>%
+        group_by(activityLabel, subject, measure) %>%
         summarise(measure.mean = mean(value, na.rm = TRUE)) %>%
         spread(measure, measure.mean)
 
+# output the tidy dataset to csv
+write.csv(dataAvg, file = "output/avgMeasurement.csv", row.names = FALSE)
